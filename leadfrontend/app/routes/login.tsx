@@ -5,7 +5,7 @@ import { Button } from '~/components/ui/button'
 import { Input } from '~/components/ui/input'
 import { Label } from '~/components/ui/label'
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '~/components/ui/card'
-import { Form, useActionData, json } from '@remix-run/react'
+import { Form, useActionData, json, redirect } from '@remix-run/react'
 import UserService from '~/services/UserService'
 type ActionData = {
   fieldErrors?: {
@@ -18,7 +18,7 @@ type ActionData = {
   };
   message?:string
 };
-
+//the next thing that we have to complete is the loading section and button disabling while clicking
 export async function action({ request }: { request: Request }) {
   const formData = new URLSearchParams(await request.text());
   const username = formData.get("username")?.trim();
@@ -34,7 +34,8 @@ export async function action({ request }: { request: Request }) {
   }
   const status=await UserService.CheckUser({username,password} as {username:string,password:string})
   if(status){
-    console.info('User Inserted')
+    console.info('User Verified')
+    return redirect('/home')
   }else{
     return json({message:"Failed To Verify"})
   }
