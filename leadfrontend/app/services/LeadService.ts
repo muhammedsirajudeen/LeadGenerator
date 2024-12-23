@@ -24,15 +24,18 @@ export interface CompanyInfo {
     company_description: string;
 }
 const PAGE_LIMIT=30
-async function GetLeads(page: number) {
+async function GetLeads(page: number,revenue:number) {
     try {
         // const limit=PAGE_LIMIT*page
         const offset=PAGE_LIMIT*(page-1)
-        const results = await pool.query("SELECT * FROM company_data LIMIT $1 OFFSET $2",[PAGE_LIMIT,offset])
-        return results.rows as CompanyInfo[] 
+        const query="SELECT * FROM company_data WHERE estimated_annual_sales > $3 ORDER BY company_name LIMIT $1 OFFSET $2 "
+        const results = await pool.query(query,[PAGE_LIMIT,offset,revenue])
+        
+        return results.rows as CompanyInfo[] ?? []
 
     } catch (error) {
-        return null
+        console.log(error)
+        return []
     }
 }
 
