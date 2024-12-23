@@ -1,6 +1,6 @@
 'use client'
 
-import { Form, useLoaderData } from "@remix-run/react";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
 import { Slider } from "~/components/ui/slider";
 import { useState } from "react";
@@ -9,8 +9,21 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { BarChart, DollarSign, Globe, Phone, ShoppingBag, Users } from "lucide-react";
 import { Badge } from "~/components/ui/badge";
 import { motion } from "framer-motion"
-export async function loader() {
-    const data = await GetLeads(1)
+import {flushSync} from "react-dom"
+import {
+    Pagination,
+    PaginationContent,
+    PaginationEllipsis,
+    PaginationItem,
+    PaginationLink,
+  } from "~/components/ui/pagination"
+  
+
+export async function loader({request}:{request:Request}) {
+    const url=new URL(request.url)
+    const queryParams=url.searchParams
+    const page=queryParams.get('page') ?? '1'
+    const data = await GetLeads(parseInt(page))
     return data
 }
 
@@ -21,7 +34,7 @@ export async function action({ request }: { request: Request }) {
 }
 export default function StyledSearchForm() {
     const CompanyData = useLoaderData() as CompanyInfo[]
-    console.log(CompanyData)
+    const [page,setPage]=useState(2)
     const [revenue, setRevenue] = useState([50000]);
 
     return (
@@ -91,11 +104,10 @@ export default function StyledSearchForm() {
                 {CompanyData.map((company, index) => (
                     <motion.div
                     key={index}
-                    initial={{ opacity: 0, y: -20 }} // Starting state
-                    animate={{ opacity: 1, y: 0 }}  // Animate to this state
-                    transition={{ duration: 0.5 }}  // Animation duration
-                    // style={{ , padding: "20px" }}
-                >
+                    initial={{ opacity: 0, y: -20 }} 
+                    animate={{ opacity: 1, y: 0 }}  
+                    transition={{ duration: 0.5 }}
+                    >
                                         <Card key={index} className="w-full bg-white shadow-md rounded-lg border border-gray-200">
                         <CardHeader className="  p-4 rounded-t-lg">
                             <CardTitle className="text-lg font-bold">{company.company_name}</CardTitle>
@@ -131,7 +143,7 @@ export default function StyledSearchForm() {
                         </CardContent>
                         <CardFooter className="p-4 bg-white rounded-b-lg border-t border-gray-200">
                             <div className="flex flex-wrap gap-2">
-                                {company.technologies.split(',').map((tech, i) => (
+                                {company?.technologies?.split(',').map((tech, i) => (
                                     <Badge key={i} variant="secondary" className="bg-blue-100 text-blue-800 px-2 py-1 rounded-md">
                                         {tech.trim()}
                                     </Badge>
@@ -143,6 +155,34 @@ export default function StyledSearchForm() {
 
 
                 ))}
+                
+                <div className="fixed bottom-0 flex w-screen mb-4">
+                <Pagination>
+                    <PaginationContent>
+                        <PaginationItem>
+                        <Link onClick={()=>{
+                            flushSync(()=>{
+                                setPage((page)=>page-1===0?1:page-1)
+                            })
+                        }} to={`?page=${page}`} className="text-sm font-bold" >previous</Link>
+                        </PaginationItem>
+                        <PaginationItem>
+                        <PaginationLink href="#">1</PaginationLink>
+                        </PaginationItem>
+                        <PaginationItem>
+                        <PaginationEllipsis />
+                        </PaginationItem>
+                        <PaginationItem>
+                        <Link onClick={()=>{
+                            flushSync(()=>{
+                                setPage((page)=>page+1)
+                            })
+                        }} to={`?page=${page}`} className="text-sm font-bold"  >next</Link>
+                        </PaginationItem>
+                    </PaginationContent>
+                </Pagination>
+                </div>
+
             </div>
         </>
     );

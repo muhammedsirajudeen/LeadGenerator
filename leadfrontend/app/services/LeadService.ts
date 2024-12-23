@@ -23,12 +23,12 @@ export interface CompanyInfo {
     location: string;
     company_description: string;
 }
-const PAGE_LIMIT=50
+const PAGE_LIMIT=30
 async function GetLeads(page: number) {
     try {
-        const limit=PAGE_LIMIT*page
+        // const limit=PAGE_LIMIT*page
         const offset=PAGE_LIMIT*(page-1)
-        const results = await pool.query("SELECT * FROM company_data LIMIT $1 OFFSET $2",[limit,offset])
+        const results = await pool.query("SELECT * FROM company_data LIMIT $1 OFFSET $2",[PAGE_LIMIT,offset])
         return results.rows as CompanyInfo[] 
 
     } catch (error) {
